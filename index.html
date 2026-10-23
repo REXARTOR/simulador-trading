@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Trading Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="p-4 max-w-lg mx-auto">
+  <h1 class="text-xl font-bold text-center my-4 text-blue-400">Simulador de Trading Probabilístico</h1>
+  
+  <div class="bg-slate-800 p-4 rounded-xl mb-4 space-y-4 shadow-lg border border-slate-700">
+    <div>
+      <label class="text-sm font-medium">Capital Inicial ($): <span id="capVal" class="font-bold text-blue-400">200</span></label>
+      <input type="range" id="capital" min="100" max="10000" step="100" value="200" class="w-full mt-1">
+    </div>
+    <div>
+      <label class="text-sm font-medium">Win Rate (%): <span id="winVal" class="font-bold text-blue-400">55</span>%</label>
+      <input type="range" id="winRate" min="30" max="80" step="1" value="55" class="w-full mt-1">
+    </div>
+    <div>
+      <label class="text-sm font-medium">Ratio Riesgo:Beneficio (1:X): <span id="rrVal" class="font-bold text-blue-400">3.0</span></label>
+      <input type="range" id="rrRatio" min="1" max="5" step="0.5" value="3.0" class="w-full mt-1">
+    </div>
+    <div>
+      <label class="text-sm font-medium">Días de Operativa: <span id="daysVal" class="font-bold text-blue-400">200</span></label>
+      <input type="range" id="days" min="30" max="365" step="5" value="200" class="w-full mt-1">
+    </div>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl mb-4 shadow-lg border border-slate-700">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-xs text-slate-400">Balance Final Estimado:</span>
+      <span id="finalCap" class="text-lg font-bold text-green-400">$0</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-xs text-slate-400">Máximo Drawdown:</span>
+      <span id="maxDD" class="text-sm font-bold text-red-400">0%</span>
+    </div>
+  </div>
+
+  <div class="bg-slate-800 p-2 rounded-xl shadow-lg border border-slate-700">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <script>
+    const capitalInput = document.getElementById('capital');
+    const winRateInput = document.getElementById('winRate');
+    const rrRatioInput = document.getElementById('rrRatio');
+    const daysInput = document.getElementById('days');
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    let chart;
+
+    function runSim() {
+      const cap = parseFloat(capitalInput.value);
+      const wr = parseFloat(winRateInput.value) / 100;
+      const rr = parseFloat(rrRatioInput.value);
+      const d = parseInt(daysInput.value);
+
+      document.getElementById('capVal').innerText = cap;
+      document.getElementById('winVal').innerText = winRateInput.value;
+      document.getElementById('rrVal').innerText = parseFloat(rrRatioInput.value).toFixed(1);
+      document.getElementById('daysVal').innerText = d;
+
+      let realBalance = cap;
+      let expBalance = cap;
+      let peak = cap;
+      let maxDD = 0;
+
+      const realData = [cap];
+      const expData = [cap];
+      const labels = ['Día 0'];
+
+      const dailyExpectedReturn = (wr * rr - (1 - wr)) * 0.01;
+
+      for (let i = 1; i <= d; i++) {
+        const isWin = Math.random() < wr;
+        const changePct = isWin ? (0.01 * rr) : -0.01;
+        realBalance *= (1 + changePct);
+        
+        if (realBalance > peak) peak = realBalance;
+        const dd = (peak - realBalance) / peak;
+        if (dd > maxDD) maxDD = dd;
+
+        expBalance *= (1 + dailyExpectedReturn);
+
+        if (i % Math.ceil(d / 15) === 0 || i === d) {
+          realData.push(Math.round(realBalance));
+          expData.push(Math.round(expBalance));
+          labels.push('Día ' + i);
+        }
+      }
+
+      document.getElementById('finalCap').innerText = '$' + Math.round(realBalance).toLocaleString();
+      document.getElementById('maxDD').innerText = '-' + (maxDD * 100).toFixed(1) + '%';
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Realidad Probabilística', data: realData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 },
+            { label: 'Expectativa Teórica', data: expData, borderColor: '#94a3b8', borderDash: [5, 5], fill: false }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#f8fafc' } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' } },
+            y: { ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    [capitalInput, winRateInput, rrRatioInput, daysInput].forEach(el => el.addEventListener('input', runSim));
+    runSim();
+  </script>
+</body>
+</html>
