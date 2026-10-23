@@ -3,71 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Trading Probabilístico</title>
+  <title>Simulador de Trading Probabilístico - Modelo Cuantitativo</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background-color: #0b0f19; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
-    input[type=range] { accent-color: #38bdf8; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Range Input Custom Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #1e293b;
+      border-radius: 8px;
+      height: 6px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      transition: transform 0.1s ease;
+    }
+
+    input[type=range]::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
   </style>
 </head>
-<body class="p-3 max-w-xl mx-auto">
-  <header class="text-center my-3">
-    <h1 class="text-lg font-bold text-sky-400">Simulador de Trading Probabilístico</h1>
-    <p class="text-xs text-slate-400">Modelo Cuantitativo (Gestión de Riesgo 1%)</p>
-  </header>
+<body class="p-3 sm:p-5 max-w-xl mx-auto min-h-screen flex flex-col justify-between">
 
-  <!-- Panel de Control / Parámetros -->
-  <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl mb-3 space-y-3 shadow-xl">
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="text-xs font-medium text-slate-300">Capital Inicial ($): <span id="capVal" class="font-bold text-sky-400">200</span></label>
-        <input type="range" id="capital" min="100" max="10000" step="100" value="200" class="w-full mt-1">
+  <div>
+    <!-- Encabezado estilo TradingView -->
+    <header class="text-center my-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-sky-400 mb-2">
+        <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+        MODELO CUANTITATIVO 1% RIESGO
       </div>
-      <div>
-        <label class="text-xs font-medium text-slate-300">Win Rate (%): <span id="winVal" class="font-bold text-sky-400">40</span>%</label>
-        <input type="range" id="winRate" min="20" max="80" step="1" value="40" class="w-full mt-1">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-100">Simulador de Trading Probabilístico</h1>
+      <p class="text-xs text-slate-400 mt-1">Análisis Cuantitativo & Gestión de Riesgo Profesional</p>
+    </header>
+
+    <!-- Panel de Control de Parámetros -->
+    <div class="glass-card p-4 rounded-2xl mb-4 space-y-4 shadow-2xl">
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Capital Inicial -->
+        <div>
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-medium text-slate-400">Capital Inicial</span>
+            <span class="font-bold text-sky-400 text-sm">$<span id="capVal">200</span></span>
+          </div>
+          <input type="range" id="capital" min="100" max="20000" step="100" value="200" class="w-full">
+        </div>
+
+        <!-- Win Rate -->
+        <div>
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-medium text-slate-400">Win Rate</span>
+            <span class="font-bold text-sky-400 text-sm"><span id="winVal">40</span>%</span>
+          </div>
+          <input type="range" id="winRate" min="20" max="80" step="1" value="40" class="w-full">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Ratio Riesgo:Beneficio -->
+        <div>
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-medium text-slate-400">Ratio R:B (1:X)</span>
+            <span class="font-bold text-sky-400 text-sm">1:<span id="rrVal">3.0</span></span>
+          </div>
+          <input type="range" id="rrRatio" min="1" max="5" step="0.5" value="3.0" class="w-full">
+        </div>
+
+        <!-- Días Operativos -->
+        <div>
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-medium text-slate-400">Días Operativos</span>
+            <span class="font-bold text-sky-400 text-sm"><span id="daysVal">200</span> días</span>
+          </div>
+          <input type="range" id="days" min="30" max="365" step="5" value="200" class="w-full">
+        </div>
+      </div>
+
+      <!-- Alerta de Expectativa Matemática -->
+      <div id="warningBox" class="text-xs px-3 py-2 rounded-xl text-center font-medium transition-all duration-300">
+        Calculando expectativa matemática...
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="text-xs font-medium text-slate-300">Ratio R:B (1:X): <span id="rrVal" class="font-bold text-sky-400">3.0</span></label>
-        <input type="range" id="rrRatio" min="1" max="5" step="0.5" value="3.0" class="w-full mt-1">
+
+    <!-- Tarjetas de Métricas Clave -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+      <div class="glass-card p-3 rounded-2xl text-center">
+        <span class="text-[11px] font-medium text-slate-400 block mb-0.5">Balance Final</span>
+        <span id="finalCap" class="text-sm sm:text-base font-bold text-emerald-400">$0</span>
       </div>
-      <div>
-        <label class="text-xs font-medium text-slate-300">Días Operativos: <span id="daysVal" class="font-bold text-sky-400">200</span></label>
-        <input type="range" id="days" min="30" max="365" step="5" value="200" class="w-full mt-1">
+      <div class="glass-card p-3 rounded-2xl text-center">
+        <span class="text-[11px] font-medium text-slate-400 block mb-0.5">Crecimiento</span>
+        <span id="growthPct" class="text-sm sm:text-base font-bold text-sky-400">0%</span>
+      </div>
+      <div class="glass-card p-3 rounded-2xl text-center">
+        <span class="text-[11px] font-medium text-slate-400 block mb-0.5">Max Drawdown</span>
+        <span id="maxDD" class="text-sm sm:text-base font-bold text-rose-400">0%</span>
       </div>
     </div>
-    <div id="warningBox" class="text-[11px] px-2 py-1 rounded bg-slate-800 text-slate-300 text-center font-medium">
-      Calculando expectativa matemática...
+
+    <!-- Gráfico de Curva de Capital -->
+    <div class="glass-card p-3 rounded-2xl shadow-2xl relative">
+      <div class="h-64 sm:h-72 w-full">
+        <canvas id="chart"></canvas>
+      </div>
     </div>
   </div>
 
-  <!-- Métricas Clave de Resultados -->
-  <div class="grid grid-cols-3 gap-2 mb-3">
-    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-center">
-      <span class="text-[10px] text-slate-400 block">Balance Final</span>
-      <span id="finalCap" class="text-sm font-bold text-emerald-400">$0</span>
-    </div>
-    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-center">
-      <span class="text-[10px] text-slate-400 block">Crecimiento</span>
-      <span id="growthPct" class="text-sm font-bold text-sky-400">0%</span>
-    </div>
-    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-center">
-      <span class="text-[10px] text-slate-400 block">Máximo Drawdown</span>
-      <span id="maxDD" class="text-sm font-bold text-rose-400">0%</span>
-    </div>
-  </div>
-
-  <!-- Gráfico de Curva de Capital -->
-  <div class="bg-slate-900 border border-slate-800 p-2 rounded-xl shadow-xl">
-    <div class="h-64">
-      <canvas id="chart"></canvas>
-    </div>
-  </div>
+  <!-- Pie de página -->
+  <footer class="text-center my-4 text-[11px] text-slate-500">
+    <p>Simulación determinista basada en probabilidad continua | Riesgo 1.0% por trade</p>
+  </footer>
 
   <script>
+    // Referencias a los elementos del DOM
     const capitalInput = document.getElementById('capital');
     const winRateInput = document.getElementById('winRate');
     const rrRatioInput = document.getElementById('rrRatio');
@@ -77,12 +148,18 @@
     const ctx = document.getElementById('chart').getContext('2d');
     let chart;
 
+    // Gradiente para el relleno del gráfico
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+    gradient.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
     function runSim() {
       const cap = parseFloat(capitalInput.value);
       const wr = parseFloat(winRateInput.value) / 100;
       const rr = parseFloat(rrRatioInput.value);
       const d = parseInt(daysInput.value);
 
+      // Actualizar valores numéricos en la interfaz
       document.getElementById('capVal').innerText = cap.toLocaleString();
       document.getElementById('winVal').innerText = winRateInput.value;
       document.getElementById('rrVal').innerText = rr.toFixed(1);
@@ -92,11 +169,11 @@
       const expectPerTrade = (wr * rr) - ((1 - wr) * 1);
       
       if (expectPerTrade <= 0) {
-        warningBox.innerHTML = "⚠️ ¡Atención! Expectativa NEGATIVA (con estos valores la cuenta decrece).";
-        warningBox.className = "text-[11px] px-2 py-1 rounded bg-rose-950 text-rose-300 text-center font-medium";
+        warningBox.innerHTML = "⚠️ Expectativa NEGATIVA: Con esta combinación el sistema destruye capital a largo plazo.";
+        warningBox.className = "text-xs px-3 py-2 rounded-xl text-center font-semibold bg-rose-950/80 border border-rose-800/50 text-rose-300";
       } else {
-        warningBox.innerHTML = `✅ Expectativa positiva: +${(expectPerTrade * 1).toFixed(2)}R netas por trade.`;
-        warningBox.className = "text-[11px] px-2 py-1 rounded bg-emerald-950 text-emerald-300 text-center font-medium";
+        warningBox.innerHTML = `⚡ Expectativa Positiva: +${(expectPerTrade).toFixed(2)}R netas esperadas por operación.`;
+        warningBox.className = "text-xs px-3 py-2 rounded-xl text-center font-semibold bg-emerald-950/80 border border-emerald-800/50 text-emerald-300";
       }
 
       let balanceReal = cap;
@@ -110,11 +187,12 @@
       let maxDD = 0;
 
       for (let i = 1; i <= d; i++) {
-        let cycle = Math.sin(i / 15) * 0.005; // Fluctuación armónica realista
+        // Modelo armónico para simular la racha probabilística real sin caotería aleatoria
+        let cycle = Math.sin(i / 12) * 0.004; 
         let dayReturn = dailyGrowthRate + cycle;
         
         balanceReal *= (1 + dayReturn);
-        if (balanceReal < cap * 0.05) balanceReal = cap * 0.05;
+        if (balanceReal < cap * 0.05) balanceReal = cap * 0.05; // Protección de piso
 
         if (balanceReal > peak) peak = balanceReal;
         let dd = (peak - balanceReal) / peak;
@@ -131,10 +209,12 @@
 
       const totalGrowth = ((balanceReal - cap) / cap) * 100;
 
+      // Actualizar tarjetas de métricas
       document.getElementById('finalCap').innerText = '$' + Math.round(balanceReal).toLocaleString();
       document.getElementById('growthPct').innerText = (totalGrowth > 0 ? '+' : '') + totalGrowth.toFixed(0) + '%';
       document.getElementById('maxDD').innerText = '-' + (maxDD * 100).toFixed(1) + '%';
 
+      // Renderizar o actualizar gráfico de Chart.js
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
         type: 'line',
@@ -145,17 +225,18 @@
               label: 'Realidad Probabilística', 
               data: dataReal, 
               borderColor: '#38bdf8', 
-              backgroundColor: 'rgba(56,189,248,0.08)', 
+              borderWidth: 2.5,
+              backgroundColor: gradient, 
               fill: true, 
-              tension: 0.3,
-              borderWidth: 2,
-              pointRadius: 0
+              tension: 0.35,
+              pointRadius: 0,
+              pointHoverRadius: 4
             },
             { 
               label: 'Expectativa Teórica', 
               data: dataTeorico, 
               borderColor: '#64748b', 
-              borderDash: [4, 4], 
+              borderDash: [5, 5], 
               fill: false,
               borderWidth: 1.5,
               pointRadius: 0
@@ -167,19 +248,42 @@
           maintainAspectRatio: false,
           plugins: { 
             legend: { 
-              labels: { color: '#94a3b8', boxWidth: 12, font: { size: 10 } } 
-            } 
+              position: 'top',
+              labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10, family: 'Inter' } } 
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: '#0f172a',
+              titleColor: '#f8fafc',
+              bodyColor: '#38bdf8',
+              borderColor: '#334155',
+              borderWidth: 1
+            }
           },
           scales: {
-            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 9 } } },
-            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 9 } } }
+            x: { 
+              grid: { color: 'rgba(30, 41, 59, 0.5)' }, 
+              ticks: { color: '#64748b', font: { size: 9, family: 'Inter' } } 
+            },
+            y: { 
+              grid: { color: 'rgba(30, 41, 59, 0.5)' }, 
+              ticks: { 
+                color: '#64748b', 
+                font: { size: 9, family: 'Inter' },
+                callback: function(val) { return '$' + val.toLocaleString(); }
+              } 
+            }
           }
         }
       });
     }
 
+    // Event listeners para reactividad inmediata al mover deslizadores
     [capitalInput, winRateInput, rrRatioInput, daysInput].forEach(el => el.addEventListener('input', runSim));
-    runSim();
+    
+    // Ejecutar al cargar
+    window.onload = runSim;
   </script>
 </body>
 </html>
