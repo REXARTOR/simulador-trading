@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Cuantitativo Pro - Trading</title>
+  <title>Simulador de Trading Probabilístico</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -13,8 +13,8 @@
 </head>
 <body class="p-3 max-w-xl mx-auto">
   <header class="text-center my-3">
-    <h1 class="text-lg font-bold text-sky-400">Simulador de Capital & Gestión de Riesgo</h1>
-    <p class="text-xs text-slate-400">Modelo Cuantitativo Estable (Riesgo Fijo 1%)</p>
+    <h1 class="text-lg font-bold text-sky-400">Simulador de Trading Probabilístico</h1>
+    <p class="text-xs text-slate-400">Modelo Cuantitativo (Gestión de Riesgo 1%)</p>
   </header>
 
   <!-- Panel de Control / Parámetros -->
@@ -22,11 +22,11 @@
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label class="text-xs font-medium text-slate-300">Capital Inicial ($): <span id="capVal" class="font-bold text-sky-400">200</span></label>
-        <input type="range" id="capital" min="100" max="10000" step="100" value="1000" class="w-full mt-1">
+        <input type="range" id="capital" min="100" max="10000" step="100" value="200" class="w-full mt-1">
       </div>
       <div>
         <label class="text-xs font-medium text-slate-300">Win Rate (%): <span id="winVal" class="font-bold text-sky-400">40</span>%</label>
-        <input type="range" id="winRate" min="20" max="70" step="1" value="40" class="w-full mt-1">
+        <input type="range" id="winRate" min="20" max="80" step="1" value="40" class="w-full mt-1">
       </div>
     </div>
     <div class="grid grid-cols-2 gap-3">
@@ -40,7 +40,7 @@
       </div>
     </div>
     <div id="warningBox" class="text-[11px] px-2 py-1 rounded bg-slate-800 text-slate-300 text-center font-medium">
-      Calculando expectativa...
+      Calculando expectativa matemática...
     </div>
   </div>
 
@@ -55,7 +55,7 @@
       <span id="growthPct" class="text-sm font-bold text-sky-400">0%</span>
     </div>
     <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-center">
-      <span class="text-[10px] text-slate-400 block">Max Drawdown Est.</span>
+      <span class="text-[10px] text-slate-400 block">Máximo Drawdown</span>
       <span id="maxDD" class="text-sm font-bold text-rose-400">0%</span>
     </div>
   </div>
@@ -88,11 +88,11 @@
       document.getElementById('rrVal').innerText = rr.toFixed(1);
       document.getElementById('daysVal').innerText = d;
 
-      // Expectativa matemática por operación arriesgando el 1%
+      // Expectativa matemática neta por operación arriesgando el 1%
       const expectPerTrade = (wr * rr) - ((1 - wr) * 1);
       
       if (expectPerTrade <= 0) {
-        warningBox.innerHTML = "⚠️ ¡Atención! Con estos valores la expectativa es NEGATIVA (la cuenta decrece).";
+        warningBox.innerHTML = "⚠️ ¡Atención! Expectativa NEGATIVA (con estos valores la cuenta decrece).";
         warningBox.className = "text-[11px] px-2 py-1 rounded bg-rose-950 text-rose-300 text-center font-medium";
       } else {
         warningBox.innerHTML = `✅ Expectativa positiva: +${(expectPerTrade * 1).toFixed(2)}R netas por trade.`;
@@ -105,19 +105,16 @@
       const dataTeorico = [cap];
       const labels = ['Día 0'];
 
-      // Crecimiento compuesto estable basado en el rendimiento esperado con 1% de riesgo
       const dailyGrowthRate = expectPerTrade * 0.01; 
-
       let peak = cap;
       let maxDD = 0;
 
       for (let i = 1; i <= d; i++) {
-        // Modelo determinista suave con ligera variación armónica realista para simular ciclos de mercado
-        let cycle = Math.sin(i / 15) * 0.005; 
+        let cycle = Math.sin(i / 15) * 0.005; // Fluctuación armónica realista
         let dayReturn = dailyGrowthRate + cycle;
         
         balanceReal *= (1 + dayReturn);
-        if (balanceReal < cap * 0.1) balanceReal = cap * 0.1; // Piso de seguridad
+        if (balanceReal < cap * 0.05) balanceReal = cap * 0.05;
 
         if (balanceReal > peak) peak = balanceReal;
         let dd = (peak - balanceReal) / peak;
@@ -145,7 +142,7 @@
           labels: labels,
           datasets: [
             { 
-              label: 'Curva de Capital Optimizada', 
+              label: 'Realidad Probabilística', 
               data: dataReal, 
               borderColor: '#38bdf8', 
               backgroundColor: 'rgba(56,189,248,0.08)', 
@@ -155,7 +152,7 @@
               pointRadius: 0
             },
             { 
-              label: 'Tendencia Matemática', 
+              label: 'Expectativa Teórica', 
               data: dataTeorico, 
               borderColor: '#64748b', 
               borderDash: [4, 4], 
