@@ -145,7 +145,6 @@
 
         async function sincronizarDatos() {
             try {
-                // Enlace actualizado del túnel persistente y sin caché
                 const response = await fetch('https://clinics-regulations-status-specification.trycloudflare.com/', {
                     cache: 'no-store'
                 });
@@ -166,6 +165,13 @@
                     document.getElementById('balance').textContent = `$${balanceVal.toLocaleString()}`;
                     document.getElementById('pnl-diario').textContent = `${pnlVal >= 0 ? '+' : ''}${pnlVal}%`;
                     document.getElementById('drawdown').textContent = `${ddVal}%`;
+
+                    // Actualizar gráfica si el bot envía datos de curva (ej: data.equity_curve = [{time: '10:00', value: 1000}, ...])
+                    if (capitalChart && data.equity_curve && Array.isArray(data.equity_curve)) {
+                        capitalChart.data.labels = data.equity_curve.map(pt => pt.time);
+                        capitalChart.data.datasets[0].data = data.equity_curve.map(pt => pt.value);
+                        capitalChart.update();
+                    }
 
                     const tbody = document.getElementById('trades-table-body');
                     const trades = data.today_trades || [];
