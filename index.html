@@ -83,6 +83,10 @@
     <script>
         let capitalChart = null;
 
+        // Si la URL cambia en el futuro, puedes pegarla en la consola del navegador así:
+        // localStorage.setItem('API_URL', 'https://TU-NUEVA-URL.trycloudflare.com');
+        let API_BASE_URL = localStorage.getItem('API_URL') || 'https://hint-earnings-accepted-walking.trycloudflare.com';
+
         function initChart() {
             const ctx = document.getElementById('capitalChart').getContext('2d');
             capitalChart = new Chart(ctx, {
@@ -145,8 +149,7 @@
 
         async function sincronizarDatos() {
             try {
-                // URL actualizada con el túnel activo actual de Cloudflare
-                const response = await fetch('https://hint-earnings-accepted-walking.trycloudflare.com', {
+                const response = await fetch(API_BASE_URL, {
                     cache: 'no-store'
                 });
                 if (!response.ok) throw new Error('Fallo de red');
