@@ -121,7 +121,7 @@
 
         async function sincronizarDatos() {
             try {
-                const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('http://193.122.243.181:8080/'));
+                const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('http://193.122.243.181:8080/'));
                 if (!response.ok) throw new Error('Fallo de red');
 
                 const data = await response.json();
