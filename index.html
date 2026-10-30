@@ -55,5 +55,37 @@
             setInterval(cargarDatosTrading, 5000);
         });
     </script>
+    <script>
+    async function cargarDatosTrading() {
+        try {
+            const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('http://193.122.243.181:8080/'));
+            if (!response.ok) throw new Error('Error en el servidor');
+
+            const data = await response.json();
+
+            if (data.bot_status === "online") {
+                // Actualiza el balance si tienes un elemento con id 'balance'
+                const elemBalance = document.getElementById('balance');
+                if (elemBalance) {
+                    elemBalance.textContent = `$${data.account.balance.toLocaleString()}`;
+                }
+
+                // Actualiza el indicador si tienes uno con id 'bot-status-indicator'
+                const indicador = document.getElementById('bot-status-indicator');
+                if (indicador) {
+                    indicador.className = "text-emerald-400"; // Ajusta a tu estilo de color verde
+                    indicador.textContent = "Online";
+                }
+            }
+        } catch (error) {
+            console.error("Sin conexión:", error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarDatosTrading();
+        setInterval(cargarDatosTrading, 5000);
+    });
+</script>
 </body>
 </html>
