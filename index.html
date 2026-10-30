@@ -146,7 +146,7 @@
 
         async function sincronizarDatos() {
             try {
-                const response = await fetch('http://193.122.243.181/');
+                const response = await fetch('/');
                 if (!response.ok) throw new Error('Fallo de red');
 
                 const data = await response.json();
