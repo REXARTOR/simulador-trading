@@ -88,9 +88,9 @@
             capitalChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Inicio', '09:00', '11:00', '13:00', '15:00'],
+                    labels: [], // Arranca completamente vacío, sin etiquetas inventadas
                     datasets: [{
-                        data: [10000, 10100, 10250, 10350, 10500],
+                        data: [], // Arranca sin datos fijos
                         borderColor: '#34d399',
                         borderWidth: 2,
                         tension: 0.3,
@@ -135,6 +135,13 @@
                     <td colspan="4" class="py-4 text-center text-slate-500">Sin conexión con el bot...</td>
                 </tr>
             `;
+
+            // Vaciar la gráfica ante la desconexión real
+            if (capitalChart) {
+                capitalChart.data.labels = [];
+                capitalChart.data.datasets[0].data = [];
+                capitalChart.update();
+            }
         }
 
         async function sincronizarDatos() {
@@ -157,6 +164,9 @@
                     document.getElementById('balance').textContent = `$${balanceVal.toLocaleString()}`;
                     document.getElementById('pnl-diario').textContent = `${pnlVal >= 0 ? '+' : ''}${pnlVal}%`;
                     document.getElementById('drawdown').textContent = `${ddVal}%`;
+
+                    // Si tu API envía datos para la gráfica en el futuro, se pueden inyectar aquí. 
+                    // De momento se mantiene limpia si el backend no manda un array histórico.
 
                     const tbody = document.getElementById('trades-table-body');
                     const trades = data.today_trades || [];
