@@ -32,11 +32,11 @@
             </div>
             <div class="bg-[#131822] p-3 rounded-2xl border border-slate-800 text-center">
                 <p class="text-[11px] text-slate-400 uppercase tracking-wider">PnL Diario</p>
-                <p id="pnl- diario" class="text-base font-bold text-emerald-400 mt-1">--</p>
+                <p id="pnl-diario" class="text-base font-bold text-emerald-400 mt-1">0%</p>
             </div>
             <div class="bg-[#131822] p-3 rounded-2xl border border-slate-800 text-center">
                 <p class="text-[11px] text-slate-400 uppercase tracking-wider">Drawdown</p>
-                <p id="drawdown" class="text-base font-bold text-rose-400 mt-1">--</p>
+                <p id="drawdown" class="text-base font-bold text-rose-400 mt-1">0%</p>
             </div>
         </div>
 
@@ -119,6 +119,24 @@
             });
         }
 
+        function marcarDesconectadoRealidad() {
+            document.getElementById('bot-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
+            const statusText = document.getElementById('bot-status-text');
+            statusText.textContent = "Sin conexión";
+            statusText.className = "text-xs font-medium text-red-400";
+
+            document.getElementById('balance').textContent = "$0";
+            document.getElementById('pnl-diario').textContent = "0%";
+            document.getElementById('drawdown').textContent = "0%";
+            document.getElementById('trades-count').textContent = "0 trades";
+            
+            document.getElementById('trades-table-body').innerHTML = `
+                <tr>
+                    <td colspan="4" class="py-4 text-center text-slate-500">Sin conexión con el bot...</td>
+                </tr>
+            `;
+        }
+
         async function sincronizarDatos() {
             try {
                 const response = await fetch('https://treo-epson-circuits-minus.trycloudflare.com/');
@@ -127,18 +145,19 @@
                 const data = await response.json();
 
                 if (data.bot_status === "online") {
-                    // Actualizar Estado Conectado
                     document.getElementById('bot-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
                     const statusText = document.getElementById('bot-status-text');
                     statusText.textContent = "Conectado";
                     statusText.className = "text-xs font-medium text-emerald-400";
 
-                    // Actualizar Métricas
-                    document.getElementById('balance').textContent = `$${data.account.balance.toLocaleString()}`;
-                    document.getElementById('pnl- diario').textContent = `+${data.account.daily_pnl_percent}%`;
-                    document.getElementById('drawdown').textContent = `${data.account.drawdown_percent}%`;
+                    const balanceVal = (data.account && data.account.balance !== undefined) ? data.account.balance : 0;
+                    const pnlVal = (data.account && data.account.daily_pnl_percent !== undefined) ? data.account.daily_pnl_percent : 0;
+                    const ddVal = (data.account && data.account.drawdown_percent !== undefined) ? data.account.drawdown_percent : 0;
 
-                    // Actualizar Tabla de Trades
+                    document.getElementById('balance').textContent = `$${balanceVal.toLocaleString()}`;
+                    document.getElementById('pnl-diario').textContent = `${pnlVal >= 0 ? '+' : ''}${pnlVal}%`;
+                    document.getElementById('drawdown').textContent = `${ddVal}%`;
+
                     const tbody = document.getElementById('trades-table-body');
                     const trades = data.today_trades || [];
                     document.getElementById('trades-count').textContent = `${trades.length} trades`;
@@ -148,18 +167,23 @@
                             <tr class="text-slate-300">
                                 <td class="py-2.5 font-medium">${t.symbol}</td>
                                 <td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${t.type}</span></td>
-                                <td class="py-2.5 font-semibold ${t.result.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}">${t.result}</td>
+                                <td class="py-2.5 font-semibold ${String(t.result).startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}">${t.result}</td>
                                 <td class="py-2.5 text-right text-slate-400">${t.time}</td>
                             </tr>
                         `).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="py-4 text-center text-slate-500">No hay operaciones registradas hoy</td>
+                            </tr>
+                        `;
                     }
+                } else {
+                    marcarDesconectadoRealidad();
                 }
             } catch (error) {
                 console.error("Error sincronizando:", error);
-                document.getElementById('bot-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                const statusText = document.getElementById('bot-status-text');
-                statusText.textContent = "Sin conexión";
-                statusText.className = "text-xs font-medium text-red-400";
+                marcarDesconectadoRealidad();
             }
         }
 
